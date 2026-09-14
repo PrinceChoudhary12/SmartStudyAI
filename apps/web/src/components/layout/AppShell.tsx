@@ -10,6 +10,7 @@ type AppShellProps = {
   onNavigate: (pageId: string) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  onLogout?: () => void;
   mobileOpen: boolean;
   onMobileOpenChange: (value: boolean) => void;
   userName: string;
@@ -23,6 +24,7 @@ export function AppShell({
   onNavigate,
   theme,
   onToggleTheme,
+  onLogout,
   mobileOpen,
   onMobileOpenChange,
   userName,
@@ -81,6 +83,11 @@ export function AppShell({
           <div className="topbar-right">
             <span className="welcome-text">Welcome back, {userName}</span>
             <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+            {onLogout ? (
+              <button type="button" className="btn btn-secondary" onClick={onLogout}>
+                Log out
+              </button>
+            ) : null}
             <div className="user-pill" aria-label="Current user">
               {userName}
             </div>

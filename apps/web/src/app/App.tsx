@@ -1,6 +1,17 @@
-import { useMemo, useState } from 'react';
-import { BrowserRouter, Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  BrowserRouter,
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell';
+import { LoadingState } from '../components/feedback/LoadingState';
+import { LoginPage } from '../pages/LoginPage';
+import { RegisterPage } from '../pages/RegisterPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { SubjectsPage } from '../pages/SubjectsPage';
 import { PlannerPage } from '../pages/PlannerPage';
@@ -9,11 +20,21 @@ import { FlashcardsPage } from '../pages/FlashcardsPage';
 import { BrainGymPage } from '../pages/BrainGymPage';
 import { SettingsPage } from '../pages/SettingsPage';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+
 export type NavItem = {
   id: string;
   label: string;
   description: string;
   path: string;
+};
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 const navItems: NavItem[] = [
@@ -65,7 +86,7 @@ function NotFoundPage() {
   );
 }
 
-function AppRoutes() {
+function ProtectedLayout({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -90,9 +111,10 @@ function AppRoutes() {
       currentPage={currentPage}
       theme={theme}
       onToggleTheme={() => setTheme((current) => (current === 'light' ? 'dark' : 'light'))}
+      onLogout={onLogout}
       mobileOpen={mobileOpen}
       onMobileOpenChange={setMobileOpen}
-      userName="Student"
+      userName={user.name.split(' ')[0] || user.name}
     >
       <Routes>
         <Route
@@ -115,6 +137,107 @@ function AppRoutes() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AppShell>
+  );
+}
+
+function AppRoutes() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        setUser(null);
+        return;
+      }
+
+      const payload = (await response.json()) as {
+        success?: boolean;
+        data?: AuthUser;
+      };
+
+      setUser(payload.success && payload.data ? payload.data : null);
+    } catch {
+      setUser(null);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchCurrentUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {
+      // ignore logout errors so the UI still clears the local session state
+    } finally {
+      setUser(null);
+      navigate('/login');
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <AppShell
+        navItems={navItems}
+        activePage="dashboard"
+        currentPage={navItems[0]}
+        onNavigate={() => undefined}
+        theme="light"
+        onToggleTheme={() => undefined}
+        mobileOpen={false}
+        onMobileOpenChange={() => undefined}
+        userName="Student"
+      >
+        <LoadingState label="Checking authentication..." />
+      </AppShell>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          user ? (
+            <Navigate to="/" replace />
+          ) : (
+            <LoginPage onAuthenticated={() => void fetchCurrentUser()} />
+          )
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          user ? (
+            <Navigate to="/" replace />
+          ) : (
+            <RegisterPage onAuthenticated={() => void fetchCurrentUser()} />
+          )
+        }
+      />
+      <Route
+        path="/*"
+        element={
+          user ? (
+            <ProtectedLayout user={user} onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+    </Routes>
   );
 }
 
