@@ -11,3 +11,4 @@ coverage
 **/dist
 **/.turbo
 **/.cache
+*.tsbuildinfo
