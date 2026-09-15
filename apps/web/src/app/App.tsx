@@ -18,7 +18,9 @@ import { PlannerPage } from '../pages/PlannerPage';
 import { QuizzesPage } from '../pages/QuizzesPage';
 import { FlashcardsPage } from '../pages/FlashcardsPage';
 import { BrainGymPage } from '../pages/BrainGymPage';
+import { MoodPage } from '../pages/MoodPage';
 import { SettingsPage } from '../pages/SettingsPage';
+import { StudyPage } from '../pages/StudyPage';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
 
@@ -46,10 +48,22 @@ const navItems: NavItem[] = [
     path: '/subjects',
   },
   {
+    id: 'study',
+    label: 'Study Timer',
+    description: 'Pomodoro and focus sessions',
+    path: '/study',
+  },
+  {
     id: 'planner',
     label: 'Study Planner',
     description: 'Organize sessions and timelines',
     path: '/planner',
+  },
+  {
+    id: 'mood',
+    label: 'Mood',
+    description: 'Check-ins and motivation',
+    path: '/mood',
   },
   { id: 'quizzes', label: 'Quizzes', description: 'Practice and assessments', path: '/quizzes' },
   {
@@ -128,7 +142,9 @@ function ProtectedLayout({ user, onLogout }: { user: AuthUser; onLogout: () => v
           }
         />
         <Route path="/subjects" element={<SubjectsPage />} />
+        <Route path="/study" element={<StudyPage />} />
         <Route path="/planner" element={<PlannerPage />} />
+        <Route path="/mood" element={<MoodPage />} />
         <Route path="/quizzes" element={<QuizzesPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/brain-gym" element={<BrainGymPage />} />

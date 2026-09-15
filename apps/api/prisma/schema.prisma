@@ -8,10 +8,110 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String   @db.VarChar(100)
-  email        String   @unique @db.VarChar(255)
-  passwordHash String   @db.VarChar(255)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String        @id @default(cuid())
+  name         String        @db.VarChar(100)
+  email        String        @unique @db.VarChar(255)
+  passwordHash String        @db.VarChar(255)
+  subjects     Subject[]
+  notes        Note[]
+  studySessions StudySession[]
+  moodEntries  MoodEntry[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+enum SessionType {
+  focus
+  short_break
+  long_break
+}
+
+enum MoodType {
+  happy
+  focused
+  calm
+  tired
+  stressed
+  sad
+  excited
+}
+
+model Subject {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String     @db.VarChar(100)
+  description String?    @db.VarChar(500)
+  color       String?    @db.VarChar(7)
+  chapters    Chapter[]
+  notes       Note[]
+  studySessions StudySession[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model Chapter {
+  id          String        @id @default(cuid())
+  subjectId   String
+  subject     Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title       String        @db.VarChar(100)
+  description String?       @db.VarChar(500)
+  position    Int           @default(0)
+  notes       Note[]
+  studySessions StudySession[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([subjectId, position])
+}
+
+model Note {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId   String?
+  subject     Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  chapterId   String?
+  chapter     Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  title       String    @db.VarChar(100)
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, updatedAt])
+  @@index([subjectId])
+  @@index([chapterId])
+}
+
+model StudySession {
+  id             String     @id @default(cuid())
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId      String?
+  subject        Subject?   @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  chapterId      String?
+  chapter        Chapter?   @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  startedAt      DateTime   @default(now())
+  endedAt        DateTime?
+  durationSeconds Int
+  sessionType    SessionType
+  completed      Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+
+  @@index([userId, createdAt])
+  @@index([subjectId])
+  @@index([chapterId])
+}
+
+model MoodEntry {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mood      MoodType
+  note      String?   @db.VarChar(500)
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
 }
