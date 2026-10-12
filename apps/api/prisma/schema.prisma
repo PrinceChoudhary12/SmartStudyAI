@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(cuid())
+  name             String             @db.VarChar(100)
+  email            String             @unique @db.VarChar(255)
+  passwordHash     String             @db.VarChar(255)
+  subjects         Subject[]
+  notes            Note[]
+  studySessions    StudySession[]
+  moodEntries      MoodEntry[]
+  quizzes          Quiz[]
+  quizAttempts     QuizAttempt[]
+  flashcardDecks   FlashcardDeck[]
+  flashcardProgress FlashcardProgress[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+enum SessionType {
+  focus
+  short_break
+  long_break
+}
+
+enum MoodType {
+  happy
+  focused
+  calm
+  tired
+  stressed
+  sad
+  excited
+}
+
+enum QuestionType {
+  single_choice
+  true_false
+}
+
+enum FlashcardReviewStatus {
+  new
+  learning
+  mastered
+}
+
+model Subject {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String            @db.VarChar(100)
+  description      String?           @db.VarChar(500)
+  color            String?           @db.VarChar(7)
+  chapters         Chapter[]
+  notes            Note[]
+  studySessions    StudySession[]
+  quizzes          Quiz[]
+  flashcardDecks   FlashcardDeck[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([userId])
+}
+
+model Chapter {
+  id             String            @id @default(cuid())
+  subjectId      String
+  subject        Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title          String            @db.VarChar(100)
+  description    String?           @db.VarChar(500)
+  position       Int               @default(0)
+  notes          Note[]
+  studySessions  StudySession[]
+  quizzes        Quiz[]
+  flashcardDecks FlashcardDeck[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([subjectId, position])
+}
+
+model Note {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId   String?
+  subject     Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  chapterId   String?
+  chapter     Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  title       String    @db.VarChar(100)
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, updatedAt])
+  @@index([subjectId])
+  @@index([chapterId])
+}
+
+model StudySession {
+  id             String     @id @default(cuid())
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId      String?
+  subject        Subject?   @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  chapterId      String?
+  chapter        Chapter?   @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  startedAt      DateTime   @default(now())
+  endedAt        DateTime?
+  durationSeconds Int
+  sessionType    SessionType
+  completed      Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+
+  @@index([userId, createdAt])
+  @@index([subjectId])
+  @@index([chapterId])
+}
+
+model MoodEntry {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mood      MoodType
+  note      String?   @db.VarChar(500)
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Quiz {
+  id          String         @id @default(cuid())
+  title       String         @db.VarChar(150)
+  description String?        @db.VarChar(1000)
+  subjectId   String?
+  chapterId   String?
+  ownerId     String
+  user        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  subject     Subject?       @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  chapter     Chapter?       @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  questions   QuizQuestion[]
+  attempts    QuizAttempt[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([ownerId, updatedAt])
+  @@index([subjectId])
+  @@index([chapterId])
+}
+
+model QuizQuestion {
+  id            String      @id @default(cuid())
+  quizId        String
+  quiz          Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionText  String      @db.VarChar(2000)
+  questionType  QuestionType
+  options       Json?
+  correctAnswer Json?
+  explanation   String?     @db.VarChar(2000)
+  points        Int         @default(1)
+  order         Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([quizId, order])
+  @@index([quizId])
+}
+
+model QuizAttempt {
+  id           String    @id @default(cuid())
+  quizId       String
+  userId       String
+  quiz         Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score        Int       @default(0)
+  totalPoints  Int       @default(0)
+  percentage   Int       @default(0)
+  answers      Json?
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([quizId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model FlashcardDeck {
+  id          String     @id @default(cuid())
+  title       String     @db.VarChar(150)
+  description String?    @db.VarChar(1000)
+  subjectId   String?
+  chapterId   String?
+  ownerId     String
+  user        User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  subject     Subject?   @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  chapter     Chapter?   @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  flashcards  Flashcard[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([ownerId, updatedAt])
+  @@index([subjectId])
+  @@index([chapterId])
+}
+
+model Flashcard {
+  id         String               @id @default(cuid())
+  deckId     String
+  deck       FlashcardDeck        @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  front      String               @db.VarChar(1000)
+  back       String               @db.VarChar(2000)
+  hint       String?              @db.VarChar(500)
+  order      Int                  @default(0)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  progress   FlashcardProgress[]
+
+  @@index([deckId, order])
+}
+
+model FlashcardProgress {
+  id             String                @id @default(cuid())
+  flashcardId    String
+  userId         String
+  flashcard      Flashcard            @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         FlashcardReviewStatus @default(new)
+  reviewCount    Int                  @default(0)
+  correctCount   Int                  @default(0)
+  incorrectCount Int                  @default(0)
+  nextReviewAt   DateTime?
+  lastReviewedAt DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@unique([flashcardId, userId])
+  @@index([userId, nextReviewAt])
+}
