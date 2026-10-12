@@ -4,7 +4,7 @@ SmartStudy AI is a full-stack learning platform for student organization, study 
 
 ## Current status
 
-The repository has verified v4.0.0 study-management functionality and is actively working through the v5.0.0 quiz and flashcard engine on the `feature/v5-quiz-flashcards` branch.
+v5.0.0 has been verified, merged into `main`, and is released on GitHub as an annotated tag named `v5.0.0`.
 
 ### Verified completion
 
@@ -12,20 +12,18 @@ The repository has verified v4.0.0 study-management functionality and is activel
 - v2.0.0 UI foundation: dashboard, routing, responsive app shell, authenticated view flow
 - v3.0.0 auth and database foundation: Prisma + Postgres, secure auth, JWT cookies, middleware
 - v4.0.0 study management: subjects, chapters, notes, study sessions, mood tracking
+- v5.0.0 quiz and flashcard engine: quiz CRUD, scoring, flashcard review, spaced-repeat progress tracking, and ownership protections
 
-### v5.0.0 in progress
+### v5.0.0 release details
 
-Implemented and validated in the current branch:
+The release was validated with the project scripts and a live PostgreSQL instance before the merge into `main` and the tag creation.
 
-- quiz CRUD endpoints
-- multiple-choice and true/false question validation
-- server-side scoring and answer grading
-- attempt records with ownership checks
-- flashcard deck and card CRUD
-- review tracking and spaced-repeat progress updates
-- v5 regression tests for ownership, malformed answers, and grading safeguards
+- branch: `feature/v5-quiz-flashcards`
+- merged into: `main`
+- verified release commit: `HEAD` of `main` at the time of tagging
+- tag: `v5.0.0`
 
-This milestone is not declared complete until all checks pass in the feature branch and the branch is safely pushed and verified on GitHub.
+## Local development
 
 ## Local development
 

@@ -15,11 +15,11 @@
 
 ## Current status
 
-- Last verified milestone: v4.0.0
-- Current branch: `feature/v5-quiz-flashcards`
-- Current state: v5.0.0 quiz and flashcard maintenance and verification in progress
-- GitHub push status: not yet pushed for this branch
-- Release tag status: no v5 tag created yet
+- Last verified milestone: v5.0.0
+- Current branch: `main`
+- Current state: v5.0.0 integrated and released
+- GitHub push status: main and tag pushed to the GitHub remote
+- Release tag status: `v5.0.0` created and pushed to the remote
 
 ## Implemented and verified
 
@@ -27,26 +27,19 @@
 - v2.0.0 app shell and navigation flow
 - v3.0.0 auth and database foundation
 - v4.0.0 subjects, chapters, notes, sessions, and mood tracking
+- v5.0.0 quiz CRUD, grading, flashcard review, and ownership protections
 
-## v5.0.0 progress
+## v5.0.0 release summary
 
-- Quiz CRUD operations implemented
-- Multiple-choice and true/false question validation implemented
+- Quiz CRUD operations implemented and verified
+- Multiple-choice and true/false validation implemented
 - Server-side scoring and attempt records implemented
 - Flashcard deck, card, and review tracking implemented
 - Ownership restrictions enforced for quizzes and flashcards
 - Regression tests added for malformed answers, invalid IDs, and empty quiz attempts
-- Verification status: local API tests passing; feature branch push pending safe GitHub verification
+- Verification status: lint, typecheck, build, API tests, and Prisma checks passed before release
 
-## Remaining v5 tasks
+## Remaining tasks
 
-- confirm branch push and remote verification
-- run full lint, typecheck, build, and Prisma validation checks in a clean branch state
-- merge only after checks pass and branch safety is confirmed
-- update the version tag only after successful integration
-
-## Blockers
-
-- no safe remote feature branch push has been completed yet
-- no v5 release tag is created until verification is complete
-- v6 onward remains blocked until v5 passes the full required checks
+- v6.0.0 remains blocked until a new work item begins under the proper versioning workflow
+- additional roadmap milestones remain unstarted and are not included in this release
